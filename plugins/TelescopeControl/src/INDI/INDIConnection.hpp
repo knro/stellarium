@@ -22,67 +22,65 @@
 #include <QObject>
 #include "libindi/baseclient.h"
 
+#include <libindi/basedevice.h>
 #include <mutex>
 #include <QStringList>
 
 class INDIConnection final : public QObject, public INDI::BaseClient
 {
-	Q_OBJECT
+   Q_OBJECT
 
 public:
-	static const int SLEW_STOP;
+   static const int SLEW_STOP;
 
-	struct Coordinates
-	{
-		double RA = 0.0;
-		double DEC = 0.0;
-		bool operator==(const Coordinates &other) const;
-		bool operator!=(const Coordinates &other) const;
-	};
+   struct Coordinates
+   {
+      double RA = 0.0;
+      double DEC = 0.0;
+      bool operator==(const Coordinates &other) const;
+      bool operator!=(const Coordinates &other) const;
+   };
 
-	INDIConnection(QObject* parent = nullptr);
-	INDIConnection(const INDIConnection& that) = delete;
+   INDIConnection(QObject* parent = nullptr);
+   INDIConnection(const INDIConnection& that) = delete;
 
-	Coordinates position() const;
-	void setPosition(Coordinates coords);
-	void syncPosition(Coordinates coords);
-	bool isDeviceConnected() const;
-	const QStringList devices() const;
-	void moveNorth(int speed);
-	void moveEast(int speed);
-	void moveSouth(int speed);
-	void moveWest(int speed);
+   Coordinates position() const;
+   void setPosition(Coordinates coords);
+   void syncPosition(Coordinates coords);
+   bool isDeviceConnected() const;
+   const QStringList devices() const;
+   void moveNorth(int speed);
+   void moveEast(int speed);
+   void moveSouth(int speed);
+   void moveWest(int speed);
 
 signals:
-	void newDeviceReceived(QString name);
-	void removeDeviceReceived(QString name);
-	void serverConnectedReceived();
-	void serverDisconnectedReceived(int exit_code);
-	void speedChanged(int speed);
+   void newDeviceReceived(QString name);
+   void removeDeviceReceived(QString name);
+   void serverConnectedReceived();
+   void serverDisconnectedReceived(int exit_code);
+   void speedChanged(int speed);
 
 private:
-	void setSpeed(int speed);
+   void setSpeed(int speed);
 
-	mutable std::mutex mMutex;
-	INDI::BaseDevice* mTelescope = nullptr;
-	Coordinates mCoordinates;
-	QStringList mDevices;
+   mutable std::mutex mMutex;
+   INDI::BaseDevice mTelescope;
+   Coordinates mCoordinates;
+   QStringList mDevices;
 
 public: // from INDI::BaseClient
-	void newDevice(INDI::BaseDevice *dp) override;
-	void removeDevice(INDI::BaseDevice *dp) override;
-	void newProperty(INDI::Property *property) override;
-	void removeProperty(INDI::Property *property) override;
-	void newBLOB(IBLOB *bp) override;
-	void newSwitch(ISwitchVectorProperty *svp) override;
-	void newNumber(INumberVectorProperty *nvp) override;
-	void newText(ITextVectorProperty *tvp) override;
-	void newLight(ILightVectorProperty *lvp) override;
-	void newMessage(INDI::BaseDevice *dp, int messageID) override;
-	void serverConnected() override;
-	void serverDisconnected(int exit_code) override;
-	void unParkTelescope();
-	//void parkTelescope();
+   void newDevice(INDI::BaseDevice dp) override;
+   void removeDevice(INDI::BaseDevice dp) override;
+
+   void newProperty(INDI::Property property) override;
+   void updateProperty(INDI::Property property) override;
+   void removeProperty(INDI::Property property) override;
+
+   void serverConnected() override;
+   void serverDisconnected(int exit_code) override;
+   void unParkTelescope();
+   //void parkTelescope();
 };
 
 #endif // INDICONNECTION_HPP
